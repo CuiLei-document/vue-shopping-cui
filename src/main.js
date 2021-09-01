@@ -4,7 +4,15 @@ import './registerServiceWorker'
 import router from './router'
 import './assets/css/base.css'
 import './components/swiper/swiper'
+
+import { eventBus } from './eventBus/eventBus'
+
+Vue.prototype.$eventBus = eventBus
+
+
+
 Vue.config.productionTip = false
+
 
 new Vue({
   router,

@@ -46,7 +46,7 @@ export default {
 <style lang="scss" scoped>
 .tab-bar-item {
   height: 49px;
-
+  z-index:1;
   flex-grow: 1;
   // text-align: center;
   display: flex;

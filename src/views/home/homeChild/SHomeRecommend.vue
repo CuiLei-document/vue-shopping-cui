@@ -30,7 +30,7 @@ export default {
   display: flex;
   justify-content: center;
   font-size: 16px;
-  color:red;
+  color: red;
   padding: 10px 0 20px;
   border-bottom: 6px solid #eee;
   .home-recommend-item {

@@ -23,5 +23,8 @@ export default {
   justify-content: center;
   //   align-items: center;
   font-size: 16px;
+  background-color:rgb(248, 245, 245);
+  z-index: 9;
+  margin-top:10px;
 }
 </style>

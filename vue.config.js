@@ -27,7 +27,8 @@ module.exports = {
         'assets': '@/assets',
         'common': '@/components/common',
         'network': '@/components/network',
-        'views': '@/views'
+        'views': '@/views',
+        'content':"@/components/content"
       }
     }
   }
