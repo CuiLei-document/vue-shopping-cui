@@ -1,6 +1,8 @@
 <template>
   <div id="app">
-    <router-view></router-view>
+    <keep-alive exclude="Detail">
+      <router-view></router-view>
+    </keep-alive>
     <my-tab-bar />
   </div>
 </template>
@@ -11,4 +13,10 @@ export default {
 };
 </script>
 <style lang="scss">
+body{
+  padding:0;
+  margin:0;
+  box-sizing: border-box;
+  background:#f2f2f2;
+}
 </style>

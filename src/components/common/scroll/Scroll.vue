@@ -30,11 +30,16 @@ export default {
     scrollTo(x, y, time = 300) {
       this.scroll?.scrollTo(x, y, time);
     },
+    // 再次计算加载值
     finishPullUp() {
       this.scroll?.finishPullUp();
     },
+    // 时时刷新
     refresh() {
       this.scroll?.refresh();
+    },
+    getScrollY() {
+      return this.scroll ? this.scroll.y : 0;
     },
   },
   mounted() {
@@ -48,10 +53,11 @@ export default {
     this.scroll.on("scroll", (e) => {
       this.$emit("scroll", e);
     });
-    // 上拉事件
+    // 上拉加载更多触发事件
     if (this.pullUpLoad) {
       this.scroll.on("pullingUp", () => {
         this.$emit("pullingUp");
+        console.log('上拉加载更多')
       });
     }
   },

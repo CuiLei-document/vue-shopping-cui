@@ -1,130 +1,154 @@
 <template>
-  <div class="wrapper" ref="bs">
-    <ul class="content">
-      <li>hi1</li>
-      <li>hi2</li>
-      <li>hi3</li>
-      <li>hi4</li>
-      <li>hi5</li>
-      <li>hi6</li>
-      <li>hi7</li>
-      <li>hi8</li>
-      <li>hi9</li>
-      <li>hi10</li>
-      <li>hi11</li>
-      <li>hi12</li>
-      <li>hi13</li>
-      <li>hi14</li>
-      <li>hi15</li>
-      <li>hi16</li>
-      <li>hi17</li>
-      <li>hi18</li>
-      <li>hi19</li>
-      <li>hi20</li>
-      <li>hi21</li>
-      <li>hi22</li>
-      <li>hi23</li>
-      <li>hi24</li>
-      <li>hi25</li>
-      <li>hi26</li>
-      <li>hi27</li>
-      <li>hi28</li>
-      <li>hi29</li>
-      <li>hi30</li>
-      <li>hi31</li>
-      <li>hi32</li>
-      <li>hi33</li>
-      <li>hi34</li>
-      <li>hi35</li>
-      <li>hi36</li>
-      <li>hi37</li>
-      <li>hi38</li>
-      <li>hi39</li>
-      <li>hi40</li>
-      <li>hi41</li>
-      <li>hi42</li>
-      <li>hi43</li>
-      <li>hi44</li>
-      <li>hi45</li>
-      <li>hi46</li>
-      <li>hi47</li>
-      <li>hi48</li>
-      <li>hi49</li>
-      <li>hi50</li>
-      <li>hi51</li>
-      <li>hi52</li>
-      <li>hi53</li>
-      <li>hi54</li>
-      <li>hi55</li>
-      <li>hi56</li>
-      <li>hi57</li>
-      <li>hi58</li>
-      <li>hi59</li>
-      <li>hi60</li>
-      <li>hi61</li>
-      <li>hi62</li>
-      <li>hi63</li>
-      <li>hi64</li>
-      <li>hi65</li>
-      <li>hi66</li>
-      <li>hi67</li>
-      <li>hi68</li>
-      <li>hi69</li>
-      <li>hi70</li>
-      <li>hi71</li>
-      <li>hi72</li>
-      <li>hi73</li>
-      <li>hi74</li>
-      <li>hi75</li>
-      <li>hi76</li>
-      <li>hi77</li>
-      <li>hi78</li>
-      <li>hi79</li>
-      <li>hi80</li>
-      <li>hi81</li>
-      <li>hi82</li>
-      <li>hi83</li>
-      <li>hi84</li>
-      <li>hi85</li>
-      <li>hi86</li>
-      <li>hi87</li>
-      <li>hi88</li>
-      <li>hi89</li>
-      <li>hi90</li>
-      <li>hi91</li>
-      <li>hi92</li>
-      <li>hi93</li>
-      <li>hi94</li>
-      <li>hi95</li>
-      <li>hi96</li>
-      <li>hi97</li>
-      <li>hi98</li>
-      <li>hi99</li>
-      <li>hi100</li>
-    </ul>
-    -->
+  <div class="profile">
+    <nav-bar class="navbar">
+      <template v-slot:content>
+        <div>分类</div>
+      </template>
+    </nav-bar>
+    <div class="content">
+      <tab-menu :categories="categories" @selectItem="selectItem" />
+      <Scroll class="scroll" :pull-up-load="true" @pullingUp="loadMode">
+        <tab-content-category :subcategories="showSubCategories" />
+        <tab-control :titles="['热销', '新品', '销量']" @tabClick="tabClick" />
+        <tab-content-detail
+          :categoryDetail="showCategoryDetail"
+        ></tab-content-detail>
+      </Scroll>
+    </div>
   </div>
 </template>
 
 <script>
-import BScroll from 'better-scroll'
+import TabMenu from "./childComps/TabMenu.vue";
+import TabContentCategory from "./childComps/TabContentCategory.vue";
+import TabControl from "content/tabControl/TabControl.vue";
+import TabContentDetail from "./childComps/TabContentDetail.vue";
+
+import NavBar from "common/NavBar.vue";
+import Scroll from "common/scroll/Scroll.vue";
+import { getLoadMode } from "common/mixins.js";
+
+import {
+  getCategory,
+  getSubcategory,
+  getCategoryDetail,
+} from "network/category.js";
+import { POP, NEW, SELL } from "common/const.js";
 export default {
+  components: {
+    TabMenu,
+    TabContentCategory,
+    TabContentDetail,
+    TabControl,
+    NavBar,
+    Scroll,
+  },
   data() {
     return {
-      scroll: null,
+      categories: [],
+      categoryData: {},
+      currentIndex: -1,
+      currentType: POP,
     };
   },
-  mounted() {
-    this.scroll = new BScroll(this.$refs.bs)
+  created() {
+    this._getCategory();
+  },
+  computed: {
+    showSubCategories() {
+      if (this.currentIndex === -1) return {};
+      return this.categoryData[this.currentIndex].subcategories;
+    },
+    showCategoryDetail() {
+      if (this.currentIndex === -1) return [];
+      return this.categoryData[this.currentIndex].categoryDetail[
+        this.currentType
+      ];
+    },
+  },
+  methods: {
+    _getCategory() {
+      getCategory().then((res) => {
+        console.log(res);
+        // 1.获取分类数据
+        this.categories = res.data.category.list;
+        // 2.初始化每个类别的子数据
+        for (let i = 0; i < this.categories.length; i++) {
+          this.categoryData[i] = {
+            subcategories: {},
+            categoryDetail: {
+              pop: [],
+              new: [],
+              sell: [],
+            },
+          };
+        }
+        this._getCategories(0);
+      });
+    },
+    // 获取事件相关的方法
+    _getCategories(index) {
+      this.currentIndex = index;
+      const maitKey = this.categories[index].maitKey;
+      getSubcategory(maitKey).then((res) => {
+        this.categoryData[index].subcategories = res.data;
+        this.categoryData = { ...this.categoryData };
+        this._getCategoryDetail(POP);
+        this._getCategoryDetail(NEW);
+        this._getCategoryDetail(SELL);
+      });
+    },
+    _getCategoryDetail(type) {
+      // 获取请求的 miniWallkey
+      let miniWallkey = this.categories[this.currentIndex].miniWallkey;
+      // 发送请求，传入 miniWallkey 和 type
+      getCategoryDetail(miniWallkey, type).then((res) => {
+        this.categoryData[this.currentIndex].categoryDetail[type] = res;
+        this.categoryData = { ...this.categoryData };
+      });
+    },
+    tabClick(index) {
+      switch (index) {
+        case 0:
+          this.currentType = POP;
+          break;
+        case 1:
+          this.currentType = NEW;
+          break;
+        case 2:
+          this.currentType = SELL;
+      }
+    },
+
+    loadMode() {},
+    selectItem(index) {
+      this._getCategories(index);
+    },
   },
 };
 </script>
 
 <style lang="scss" scoped>
-.wrapper {
-  height: 300px;
-  background: red;
-  // overflow: hidden;
-  // overflow-y: auto;
+.profile {
+  height: 100vh;
+}
+.content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 44px;
+  bottom: 49px;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+}
+.scroll {
+  height: 100%;
+  flex: 1;
+}
+.navbar {
+  background: #ff8e96;
+  color: white;
+  // z-index:10;
 }
 </style>

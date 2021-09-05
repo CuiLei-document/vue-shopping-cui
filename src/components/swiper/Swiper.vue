@@ -2,7 +2,7 @@
   <swiper :options="swiperOption">
     <swiper-slide v-for="(slide, index) in swiperSlides" :key="index">
       <a :href="slide.link">
-        <img :src="slide.image" alt="" />
+        <img :src="slide.image" alt="" @load="imageLoad" />
       </a>
     </swiper-slide>
     <div class="swiper-pagination" slot="pagination"></div>
@@ -11,8 +11,10 @@
 
 <script>
 import { getHomeMultiData } from "network/home.js";
+
 export default {
   name: "carrousel",
+
   data() {
     return {
       swiperOption: {
@@ -22,6 +24,7 @@ export default {
         autoplay: true,
       },
       swiperSlides: [],
+      isLoad: false,
     };
   },
   created() {
@@ -36,6 +39,14 @@ export default {
         this.swiperSlides.push(this.swiperSlides.length + 1);
       }
     }, 3000);
+  },
+  methods: {
+    imageLoad() {
+      if (!this.isLoad) {
+        this.$emit("swiperImgLoad");
+        this.isLoad = true;
+      }
+    },
   },
 };
 </script>

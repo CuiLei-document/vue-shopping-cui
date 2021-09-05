@@ -3,6 +3,13 @@
     <NavBar class="navbar">
       <template v-slot:content> 购物 </template>
     </NavBar>
+    <TabControl
+      ref="tabControl1"
+      :titles="tabTitles"
+      @tabClick="tabClick"
+      v-show="isTabControl"
+      class="flex"
+    ></TabControl>
     <Scroll
       class="scroll"
       ref="scroll"
@@ -11,12 +18,12 @@
       :pullUpLoad="true"
       @pullingUp="loadMode"
     >
-      <Swiper></Swiper>
+      <Swiper @swiperImgLoad="swiperImgLoad" />
       <home-recommend :recommend="recommend"></home-recommend>
       <featrue-home></featrue-home>
       <TabControl
+        ref="tabControl2"
         :titles="tabTitles"
-        class="tab-control"
         @tabClick="tabClick"
       ></TabControl>
       <GoodsList :goods="tabItem"></GoodsList>
@@ -37,7 +44,7 @@ import Scroll from "@/components/common/scroll/Scroll.vue";
 import BackTop from "content/backTop/BackTop.vue";
 
 import { getHomeMultiData, getHomeGoods } from "network/home.js";
-import { debounce } from "@/components/common/utify.js";
+import { itemImgListenerMixins, backTopListenerMixins } from "common/mixins.js";
 
 export default {
   components: {
@@ -61,31 +68,30 @@ export default {
       },
       currentTab: "pop",
       isVisible: false,
+      tabOffsetTop: 0,
+      isTabControl: false,
+      saveY: 0,
     };
   },
   created() {
     // 请求多个数据
     this.getHomeMultiData();
-
     // 请求下拉数据
     this.getHomeGoods("pop");
     this.getHomeGoods("new");
     this.getHomeGoods("sell");
   },
-  mounted() {
-    // 监听 GoodsItemImg 数据
-    // debugger
-    let refresh = debounce(this.$refs.scroll.refresh, 500);
-    this.$eventBus.$on("itemImageLoad", () => {
-      refresh();
-    });
-  },
+  mixins: [itemImgListenerMixins, backTopListenerMixins],
   computed: {
     tabItem() {
       return this.types[this.currentTab].list;
     },
   },
   methods: {
+    // 获取offsetTop 图片加载完成的时机
+    swiperImgLoad() {
+      this.tabOffsetTop = this.$refs.tabControl2.$el.offsetTop;
+    },
     // 上拉加载更多
     loadMode() {
       this.getHomeGoods(this.currentTab);
@@ -96,11 +102,11 @@ export default {
     },
     // 计算滚动位置
     contentScroll(position) {
-      this.isVisible = -position.y > 500;
+      this.backTopListener(position);
+      this.isTabControl = -position.y > this.tabOffsetTop;
     },
     // 点击判断
     tabClick(index) {
-      console.log(index);
       switch (index) {
         case 0:
           this.currentTab = "pop";
@@ -112,11 +118,14 @@ export default {
           this.currentTab = "sell";
           break;
       }
+      this.$refs.tabControl1.currentIndex = index;
+      this.$refs.tabControl2.currentIndex = index;
     },
     // 请求网络的数据 - List
     getHomeMultiData() {
       getHomeMultiData().then(
         (res) => {
+          console.log(res);
           this.recommend = res.data.recommend.list;
         },
         (err) => {
@@ -131,9 +140,17 @@ export default {
         this.types[type].list.push(...res.data.list);
         this.types[type].page += 1;
 
-        this.$refs.scroll.finishPullUp()
+        this.$refs.scroll.finishPullUp();
       });
     },
+  },
+  activated() {
+    this.$refs.scroll.scrollTo(0, this.saveY, 0);
+    this.$refs.scroll.scroll.refresh();
+  },
+  deactivated() {
+    this.saveY = this.$refs.scroll.getScrollY();
+    this.$eventBus.$off("itemImageLoad", this.itemImgListener);
   },
 };
 </script>
@@ -158,8 +175,14 @@ export default {
   top: 44px;
   left: 0;
   right: 0;
-  z-index: 1;
+  // z-index: 1;
   margin-bottom: 49px;
+}
+.flex {
+  position: relative;
+  // top: 40px;
+  left: 0;
+  z-index: 2;
 }
 // .scroll {
 //   height: calc(100% - 93px);
@@ -167,10 +190,4 @@ export default {
 //   // margin-bottom: 20px;
 //   padding-bottom: 40px;
 // }
-.tab-control {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 44px;
-  z-index: 2;
-}
 </style>

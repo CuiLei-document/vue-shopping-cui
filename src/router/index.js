@@ -10,7 +10,10 @@ const routes = [
   },
   {
     path: '/home',
-    component: () => import('../views/home/Home.vue')
+    component: () => import('../views/home/Home.vue'),
+    meta: {
+      isLogin: true
+    }
   },
   {
     path: '/profile',
@@ -24,6 +27,11 @@ const routes = [
     path: '/user',
     component: () => import('../views/user/User.vue')
   },
+  {
+    path: '/detail/:iid',
+    component: () => import('views/detail/Detail.vue'),
+    name:"Detail"
+  }
 ]
 
 const router = new VueRouter({
@@ -31,5 +39,8 @@ const router = new VueRouter({
   base: process.env.BASE_URL,
   routes
 })
-
+// router.beforeEach((to, from, next) => {
+//   console.log(to.meta)
+//   next()
+// })
 export default router
