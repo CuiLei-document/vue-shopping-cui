@@ -1,5 +1,14 @@
 module.exports = {
   lintOnSave: false,
+  pwa: {
+    iconPaths: {
+      favicon32: 'favicon.ico',
+      favicon16: 'favicon.ico',
+      appleTouchIcon: 'favicon.ico',
+      maskIcon: 'favicon.ico',
+      msTileImage: 'favicon.icon'
+    },
+  },
   // pages: {
   //   index: {
   //     // page 的入口
@@ -28,7 +37,7 @@ module.exports = {
         'common': '@/components/common',
         'network': '@/components/network',
         'views': '@/views',
-        'content':"@/components/content"
+        'content': "@/components/content"
       }
     }
   }

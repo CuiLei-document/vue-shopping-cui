@@ -11,9 +11,7 @@ const routes = [
   {
     path: '/home',
     component: () => import('../views/home/Home.vue'),
-    meta: {
-      isLogin: true
-    }
+
   },
   {
     path: '/profile',
